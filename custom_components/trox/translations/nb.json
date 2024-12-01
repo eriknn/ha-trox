@@ -1,0 +1,74 @@
+{    
+	"title": "Trox Modbus TCP/IP",
+    "config": {         
+        "step": {                    
+            "user": { 
+				"title": "Trox Modbus TCP/IP Innstillinger",
+                "description": "Legg inn detaljer",
+                "data": {                     
+                    "name": "Navn", 
+                    "device_model": "Modell",                    
+                    "ip_address": "IP-adresse",   
+					"port": "Port",
+					"slave_id": "Slave ID",
+                    "scan_interval": "Pollinterval i sekunder",
+                    "scan_interval_fast": "Hurtig pollinterval i sekunder"  	
+                }        
+            }
+        },
+		"abort": {
+			"already_configured": "Integrasjonen finnes allerede"
+		}		
+    },   
+    "options": {         
+        "step": {
+            "init": {
+				"title": "Trox Modbus TCP/IP Innstillinger",
+                "description": "Legg inn detaljer",
+                "data": {                     
+                    "name": "Navn",  
+                    "device_model": "Modell",                      
+                    "ip_address": "IP-adresse",
+					"port": "Port",
+					"slave_id": "Slave ID",    
+                    "scan_interval": "Pollinterval i sekunder",
+                    "scan_interval_fast": "Hurtig pollinterval i sekunder" 
+                } 
+            }
+        },
+		"abort": {
+            "add_success": "Enhet {dev_name} ble lagt til",
+			"already_configured": "Enhet {dev_name} er allerede konfigurert"
+		}
+    },
+    "entity": {
+        "select": {
+            "Override": {
+                "state": {
+                    "none": "Ingen",
+                    "open": "Åpne",
+                    "closed": "Steng",
+                    "q_min": "Min Flow",
+                    "q_max": "Maks Flow"
+                }
+            },
+            "Command": {
+                "state": {
+                    "none": "Ingen",
+                    "synchronization": "Synkronisering",
+                    "test": "Test",
+                    "reset": "Reset"
+                }
+            },
+            "Action_Bus_Timeout": {
+                "state": {
+                    "last_setpoint": "Siste Settpunkt",
+                    "open": "Åpne",
+                    "closed": "Steng",
+                    "q_min": "Min Flow",
+                    "q_max": "Maks Flow"
+                }
+            }
+        }
+    }
+}

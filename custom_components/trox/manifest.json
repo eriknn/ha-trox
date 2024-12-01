@@ -1,0 +1,13 @@
+{
+	"domain": "trox",
+	"name": "Trox",
+	"codeowners": ["@eriknn"],
+	"config_flow": true,
+	"dependencies": ["modbus"],
+	"documentation": "https://github.com/eriknn/trox",
+	"iot_class": "local_polling",
+	"issue_tracker": "https://github.com/eriknn/trox/issues",
+	"loggers": ["custom_components.trox"],
+	"requirements": [],
+	"version": "1.0.0"
+}
