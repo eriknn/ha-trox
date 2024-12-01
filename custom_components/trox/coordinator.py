@@ -10,23 +10,20 @@ from .pytrox.trox import Trox
 
 _LOGGER = logging.getLogger(__name__)
 
-class TroxCoordinator(DataUpdateCoordinator):
-    _fast_poll_enabled = False
-    _fast_poll_count = 0
-    _normal_poll_interval = 60
-    _fast_poll_interval = 10
-    
+class TroxCoordinator(DataUpdateCoordinator):    
     def __init__(self, hass, device, device_module:str, ip, port, slave_id, scan_interval, scan_interval_fast):
         """Initialize coordinator parent"""
         super().__init__(
             hass,
             _LOGGER,
             # Name of the data. For logging purposes.
-            name="Trox CASA: " + device.name,
+            name="Trox: " + device.name,
             # Polling interval. Will only be polled if there are subscribers.
             update_interval=dt.timedelta(seconds=scan_interval),
         )
 
+        self._fast_poll_enabled = False
+        self._fast_poll_count = 0
         self._normal_poll_interval = scan_interval
         self._fast_poll_interval = scan_interval_fast
 
@@ -81,16 +78,13 @@ class TroxCoordinator(DataUpdateCoordinator):
         """ Fetch data """
         try:
             async with async_timeout.timeout(20):
-                if self._troxDevice.Datapoints["Device_Info"]["FW_Maj"].Value == 0:
+                if (dt.datetime.now() - self._timestamp) > dt.timedelta(hours=3):
                     await self._troxDevice.readDeviceInfo()
                     await self._async_update_deviceInfo()
-                if (dt.datetime.now() - self._timestamp) > dt.timedelta(hours=3):
-                    await self._troxDevice.readSetpoints() 
                     self._timestamp = dt.datetime.now()
-                await self._troxDevice.readAlarms()
-                await self._troxDevice.readSensors()
+
                 await self._troxDevice.readCommands()
-                await self._troxDevice.readUnitStatuses()
+                await self._troxDevice.readSensors()
                 
         except Exception as err:
             _LOGGER.debug("Failed when fetching data: %s", str(err))
@@ -101,7 +95,6 @@ class TroxCoordinator(DataUpdateCoordinator):
             self.device_id,
             manufacturer="Trox",
             model=self._troxDevice.getModelName(),
-            serial_number=self._troxDevice.getSerialNumber(),
             sw_version=self._troxDevice.getFW(),
         )
         _LOGGER.debug("Updated device data for: %s", self.devicename) 

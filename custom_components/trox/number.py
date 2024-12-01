@@ -11,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 
 LimitsTuple = namedtuple('limits', ['min_value', 'max_value', 'step'])
 LIMITS = {}
-LIMITS["percent"] = LimitsTuple(0, 100, 0.1)
+LIMITS["percent"] = LimitsTuple(0, 100, 1)
 
 DATA_TYPE = namedtuple('DataType', ['units', 'deviceClass', 'category', 'icon'])
 DATA_TYPES = {}

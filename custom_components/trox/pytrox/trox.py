@@ -25,15 +25,22 @@ class Trox():
     def __init__(self, device_module:str, host:str, port:int, slave_id:int):
         self._client = ModbusTcpClient(host, port)
         self._slave_id = slave_id
+        self._device_model = device_module
 
         # Load correct datapoints
-        self.load_datapoints(device_module)
+        self.load_datapoints()
 
 
-    def load_datapoints(self, device_module:str):
-        module_name = f"{device_module.lower().replace(' ', '_')}"
+    def getModelName(self):
+        return self._device_model
+    
+    def getFW(self):
+        return self.Datapoints[DEVICE_INFO]["FW"].Value
 
-        if module_name == 'TROX TVE':
+    def load_datapoints(self):
+        model_name = f"{self._device_model.lower().replace(' ', '_')}"
+
+        if model_name == 'trox_tve':
             from .devices.tve import TVE
             self.Datapoints = TVE().Datapoints
         else:
@@ -70,21 +77,26 @@ class Trox():
         n_reg = len(self.Datapoints[group])
         first_key = next(iter(self.Datapoints[group]))
         first_address = self.Datapoints[group][first_key].Address
-        
-        mode = self.getMode(group)
+        mode = self.getMode(group)     
         if mode == MODE_INPUT:
             response = self._client.read_input_registers(first_address,n_reg,self._slave_id)
         elif mode == MODE_HOLDING:
-            response = self._client.read_holding_registers(first_address,n_reg,self._slave_id)
+            response = self._client.read_holding_registers(first_address,n_reg,self._slave_id) 
             
         if response.isError():
+            _LOGGER.debug("Error: %s", response)
             raise ModbusException('{}'.format(response))
         else:
+            _LOGGER.debug("Success 1")
             for (dataPointName, data), newVal in zip(self.Datapoints[group].items(), response.registers):
+                _LOGGER.debug("Success 2")
                 newVal_2 = self.twos_complement(newVal)
+                _LOGGER.debug("Success 3")
                 if data.Scaling == 1.0:
+                    _LOGGER.debug("Success 4")
                     data.Value = newVal_2
                 else:
+                    _LOGGER.debug("Success 5")
                     data.Value = newVal_2 * data.Scaling
                 
     """ ******************************************************* """

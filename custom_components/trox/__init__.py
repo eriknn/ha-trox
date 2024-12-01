@@ -1,4 +1,4 @@
-"""Support for Trox CASA over Modbus TCP/IP."""
+"""Support for Trox dampers over Modbus TCP/IP."""
 import logging
 import async_timeout
 
@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Set up platform from a ConfigEntry."""
-    _LOGGER.debug("Setting up configuration for Trox CASA!")
+    _LOGGER.debug("Setting up configuration for Trox!")
     hass.data.setdefault(DOMAIN, {})
 
     # Load config data
@@ -70,7 +70,7 @@ async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.debug("Unloading Trox CASA entry!")
+    _LOGGER.debug("Unloading Trox entry!")
 
     # Unload entries
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

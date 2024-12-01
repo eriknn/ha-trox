@@ -2,7 +2,7 @@ from homeassistant.const import Platform
 
 # Global Constants
 DOMAIN: str = "trox"
-PLATFORMS = [Platform.NUMBER, Platform.SELECT, Platform.SENSOR]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SELECT, Platform.SENSOR]
 
 # Configuration Device Constants
 CONF_NAME: str = "name"
@@ -18,4 +18,4 @@ DEFAULT_SCAN_INTERVAL: int = 300  # Seconds
 DEFAULT_SCAN_INTERVAL_FAST: int = 5  # Seconds
 
 # Device types - Name and device file
-DEVICE_TROX_TVE = "TROX TVE"
+DEVICE_TROX_TVE = "Trox TVE"
