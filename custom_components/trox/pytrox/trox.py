@@ -17,6 +17,7 @@ class Modbus_Datapoint:
 COMMANDS = "Commands"
 DEVICE_INFO = "Device_Info"
 SENSORS = "Sensors"
+CONFIG = "Config"
 
 MODE_INPUT = 3
 MODE_HOLDING = 4

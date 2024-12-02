@@ -59,15 +59,6 @@
                     "test": "Test",
                     "reset": "Reset"
                 }
-            },
-            "Action_Bus_Timeout": {
-                "state": {
-                    "last_setpoint": "Siste Settpunkt",
-                    "open": "Åpne",
-                    "closed": "Steng",
-                    "q_min": "Min Flow",
-                    "q_max": "Maks Flow"
-                }
             }
         }
     }

@@ -14,7 +14,6 @@ _LOGGER = logging.getLogger(__name__)
 OPTIONS = {
     "Override": {0: "none", 1: "open", 2: "closed", 3: "q_min", 4: "q_max"},
     "Command": {0: "none", 1: "synchronization", 2: "test", 4: "reset"},
-    "Timeout": {0: "last_setpoint", 1: "open", 2: "closed", 3: "q_min", 5: "q_max"},    
 }
 
 DATA_TYPE = namedtuple('DataType', ['category', 'icon'])
@@ -23,7 +22,7 @@ TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type'
 ENTITIES = [
     TroxEntity("Commands", "Override", "Override", DATA_TYPE(None, None), OPTIONS["Override"]),
     TroxEntity("Commands", "Command", "Command", DATA_TYPE(None, None), OPTIONS["Command"]),
-    TroxEntity("Device_Info", "Action_Bus_Timeout", "Action on bus timeout", DATA_TYPE(EntityCategory.CONFIG, None), OPTIONS["Timeout"]),
+    TroxEntity(None, "Config_Selection", "Config Selection", DATA_TYPE(EntityCategory.CONFIG, None), None),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -49,14 +48,21 @@ class TroxSelectEntity(TroxBaseEntity, SelectEntity):
         super().__init__(coordinator, troxentity)
 
         """Select Entity properties"""
-        self._options = troxentity.options
-        self._attr_translation_key = self._key
+        if self._key == "Config_Selection":
+            self._options = self.coordinator.get_config_options()
+        else:
+            self._options = troxentity.options
+            self._attr_translation_key = self._key
 
     @property
     def current_option(self):
         try:
-            optionIndex = self.coordinator.get_value(self._group, self._key)
-            option = self._options[optionIndex]
+            if self._key == "Config_Selection":
+                optionIndex = self.coordinator.config_selection
+                option = self._options[optionIndex]
+            else:
+                optionIndex = self.coordinator.get_value(self._group, self._key)
+                option = self._options[optionIndex]
         except Exception as e:
             option = "Unknown"
         return option

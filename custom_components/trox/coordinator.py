@@ -78,12 +78,9 @@ class TroxCoordinator(DataUpdateCoordinator):
         """ Fetch data """
         try:
             async with async_timeout.timeout(20):
-                if (dt.datetime.now() - self._timestamp) > dt.timedelta(hours=3):
-                    await self._troxDevice.readDeviceInfo()
-                    await self._async_update_deviceInfo()
-                    self._timestamp = dt.datetime.now()
-
                 await self._troxDevice.readCommands()
+                await self._troxDevice.readDeviceInfo()
+                await self._async_update_deviceInfo()
                 await self._troxDevice.readSensors()
                 
         except Exception as err:
@@ -99,6 +96,10 @@ class TroxCoordinator(DataUpdateCoordinator):
         )
         _LOGGER.debug("Updated device data for: %s", self.devicename) 
 
+    ################################
+    ######## Configuration #########
+    ################################   
+    # Register callback to entity
     def registerOnUpdateCallback(self, entity, callbackfunc):
         self._update_callbacks.update({entity: callbackfunc})
 
@@ -118,6 +119,9 @@ class TroxCoordinator(DataUpdateCoordinator):
             options.update({i:config})
         return options
 
+    ################################
+    ######### Read / Write #########
+    ################################   
     def get_value(self, group, key):
         if group in self._troxDevice.Datapoints:
             if key in self._troxDevice.Datapoints[group]:

@@ -59,15 +59,6 @@
                     "test": "Test",
                     "reset": "Reset"
                 }
-            },
-            "Action_Bus_Timeout": {
-                "state": {
-                    "last_setpoint": "Last Setpoint",
-                    "open": "Open",
-                    "closed": "Close",
-                    "q_min": "Min Flow",
-                    "q_max": "Max Flow"
-                }
             }
         }
     }
