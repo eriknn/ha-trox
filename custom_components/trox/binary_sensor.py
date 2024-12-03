@@ -4,18 +4,21 @@ from collections import namedtuple
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.helpers.entity import EntityCategory
 
-from .const import DOMAIN, CONF_IP
+from .const import DOMAIN
 from .entity import TroxBaseEntity
+
+from .pytrox.trox import ModbusGroup
 
 _LOGGER = logging.getLogger(__name__)
 
 DATA_TYPE = namedtuple('DataType', ['deviceClass', 'category', 'icon'])
-DATA_TYPES = {}
-DATA_TYPES["Alarm"] = DATA_TYPE(BinarySensorDeviceClass.PROBLEM, None, "mdi:bell")
+DATA_TYPES = {
+    "Alarm": DATA_TYPE(BinarySensorDeviceClass.PROBLEM, None, "mdi:bell"),
+}
 
 TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type'])
 ENTITIES = [
-    TroxEntity("Device_Info", "Status", "Alarm", DATA_TYPES["Alarm"]),
+    TroxEntity(ModbusGroup.DEVICE_INFO, "Status", "Alarm", DATA_TYPES["Alarm"]),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):

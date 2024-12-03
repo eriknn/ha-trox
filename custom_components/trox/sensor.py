@@ -10,22 +10,25 @@ from homeassistant.helpers.entity import EntityCategory
 from .const import DOMAIN, CONF_IP
 from .entity import TroxBaseEntity
 
+from .pytrox.trox import ModbusGroup
+
 _LOGGER = logging.getLogger(__name__)
 
 DATA_TYPE = namedtuple('DataType', ['units', 'deviceClass', 'category', 'icon'])
-DATA_TYPES = {}
-DATA_TYPES["degrees"] = DATA_TYPE(DEGREE, None, None, None)
-DATA_TYPES["flow"] = DATA_TYPE(UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR, None, None, "mdi:weather-windy")
-DATA_TYPES["percent"] = DATA_TYPE(PERCENTAGE, None, None, None)
-DATA_TYPES["voltage"] = DATA_TYPE(UnitOfElectricPotential.VOLT, None, None, None)
+DATA_TYPES = {
+    "degrees": DATA_TYPE(DEGREE, None, None, None),
+    "flow": DATA_TYPE(UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR, None, None, "mdi:weather-windy"),
+    "percent": DATA_TYPE(PERCENTAGE, None, None, None),
+    "voltage": DATA_TYPE(UnitOfElectricPotential.VOLT, None, None, None),
+}
 
 TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type'])
 ENTITIES = [
-    TroxEntity("Sensors", "Position", "Damper position", DATA_TYPES["percent"]),
-    TroxEntity("Sensors", "Position_Deg", "Damper position degrees", DATA_TYPES["degrees"]),
-    TroxEntity("Sensors", "Flowrate_Percent", "Flowrate Percent", DATA_TYPES["percent"]),
-    TroxEntity("Sensors", "Flowrate_Actual", "Flowrate Actual", DATA_TYPES["flow"]),
-    TroxEntity("Sensors", "Analog_SP", "Analog Setpoint", DATA_TYPES["voltage"]),
+    TroxEntity(ModbusGroup.SENSORS, "Position", "Damper position", DATA_TYPES["percent"]),
+    TroxEntity(ModbusGroup.SENSORS, "Position_Deg", "Damper position degrees", DATA_TYPES["degrees"]),
+    TroxEntity(ModbusGroup.SENSORS, "Flowrate_Percent", "Flowrate Percent", DATA_TYPES["percent"]),
+    TroxEntity(ModbusGroup.SENSORS, "Flowrate_Actual", "Flowrate Actual", DATA_TYPES["flow"]),
+    TroxEntity(ModbusGroup.SENSORS, "Analog_SP", "Analog Setpoint", DATA_TYPES["voltage"]),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):

@@ -8,6 +8,8 @@ from homeassistant.helpers.entity import EntityCategory
 from .const import DOMAIN, CONF_IP
 from .entity import TroxBaseEntity
 
+from .pytrox.trox import ModbusGroup
+
 _LOGGER = logging.getLogger(__name__)
 
 # Creating nested dictionary of key/pairs
@@ -20,8 +22,8 @@ DATA_TYPE = namedtuple('DataType', ['category', 'icon'])
 
 TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type', 'options'])
 ENTITIES = [
-    TroxEntity("Commands", "Override", "Override", DATA_TYPE(None, None), OPTIONS["Override"]),
-    TroxEntity("Commands", "Command", "Command", DATA_TYPE(None, None), OPTIONS["Command"]),
+    TroxEntity(ModbusGroup.COMMANDS, "Override", "Override", DATA_TYPE(None, None), OPTIONS["Override"]),
+    TroxEntity(ModbusGroup.COMMANDS, "Command", "Command", DATA_TYPE(None, None), OPTIONS["Command"]),
     TroxEntity(None, "Config_Selection", "Config Selection", DATA_TYPE(EntityCategory.CONFIG, None), None),
 ]
 

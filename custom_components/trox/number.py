@@ -8,22 +8,26 @@ from homeassistant.helpers.entity import EntityCategory
 from .const import DOMAIN
 from .entity import TroxBaseEntity
 
+from .pytrox.trox import ModbusGroup
+
 _LOGGER = logging.getLogger(__name__)
 
 LimitsTuple = namedtuple('limits', ['min_value', 'max_value', 'step'])
-LIMITS = {}
-LIMITS["percent"] = LimitsTuple(0, 100, 1)
-LIMITS["config"] = LimitsTuple(0, 65535, 1)
+LIMITS = {
+    "percent": LimitsTuple(0, 100, 1),
+    "config": LimitsTuple(0, 65535, 1),
+}
 
 DATA_TYPE = namedtuple('DataType', ['units', 'deviceClass', 'category', 'icon'])
-DATA_TYPES = {}
-DATA_TYPES["percent"] = DATA_TYPE(PERCENTAGE, None, None, None)
-DATA_TYPES["config"] = DATA_TYPE(None, None, EntityCategory.CONFIG, None)
+DATA_TYPES = {
+    "percent": DATA_TYPE(PERCENTAGE, None, None, None),
+    "config": DATA_TYPE(None, None, EntityCategory.CONFIG, None),
+}
 
 TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type', 'limits'])
 ENTITIES = [
-    TroxEntity("Commands", "Setpoint", "Flow Rate Setpoint", DATA_TYPES["percent"], LIMITS["percent"]),
-    TroxEntity("Config", "Config_Value", "Config Value", DATA_TYPES["config"], LIMITS["config"]),
+    TroxEntity(ModbusGroup.COMMANDS, "Setpoint", "Flow Rate Setpoint", DATA_TYPES["percent"], LIMITS["percent"]),
+    TroxEntity(ModbusGroup.CONFIG, "Config_Value", "Config Value", DATA_TYPES["config"], LIMITS["config"]),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -44,7 +48,7 @@ class TroxNumberEntity(TroxBaseEntity, NumberEntity):
     """Representation of a Number."""
 
     def __init__(self, coordinator, troxentity):
-        """Pass coordinator to PaxCalimaEntity."""
+        """Pass coordinator to TroxEntity."""
         super().__init__(coordinator, troxentity)
 
         """Number Entity properties"""

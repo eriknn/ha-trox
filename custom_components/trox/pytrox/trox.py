@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 
 import logging
 
@@ -8,19 +9,20 @@ from pymodbus.exceptions import ModbusException
 _LOGGER = logging.getLogger(__name__)
 
 @dataclass
-class Modbus_Datapoint:
+class ModbusDatapoint:
     Address: int
     Scaling: float = 1
     Value: float = 0
 
-# ENUMS FOR GROUPS
-COMMANDS = "Commands"
-DEVICE_INFO = "Device_Info"
-SENSORS = "Sensors"
-CONFIG = "Config"
+class ModbusGroup(Enum):
+    COMMANDS = 1
+    DEVICE_INFO = 2
+    SENSORS = 3
+    CONFIG = 4
 
-MODE_INPUT = 3
-MODE_HOLDING = 4
+class ModbusMode(Enum):
+    INPUT = 3
+    HOLDING = 4
 
 class Trox():
     def __init__(self, device_module:str, host:str, port:int, slave_id:int):
@@ -36,7 +38,7 @@ class Trox():
         return self._device_model
     
     def getFW(self):
-        return self.Datapoints[DEVICE_INFO]["FW"].Value
+        return self.Datapoints[ModbusGroup.DEVICE_INFO]["FW"].Value
 
     def load_datapoints(self):
         model_name = f"{self._device_model.lower().replace(' ', '_')}"
@@ -55,19 +57,19 @@ class Trox():
 
     def getMode(self, group) -> int:
         # Used to determine if a group is holding registers or input registers
-        return MODE_HOLDING    
+        return ModbusMode.HOLDING    
 
     """ ******************************************************* """
     """ **************** READ GROUP OF VALUES ***************** """
     """ ******************************************************* """
     async def readCommands(self):
-        await self.readGroup(COMMANDS)
+        await self.readGroup(ModbusGroup.COMMANDS)
 
     async def readDeviceInfo(self):
-        await self.readGroup(DEVICE_INFO)
+        await self.readGroup(ModbusGroup.DEVICE_INFO)
 
     async def readSensors(self):
-        await self.readGroup(SENSORS)
+        await self.readGroup(ModbusGroup.SENSORS)
 
     """ ******************************************************* """
     """ ******************** READ GROUP *********************** """
@@ -79,9 +81,9 @@ class Trox():
         first_key = next(iter(self.Datapoints[group]))
         first_address = self.Datapoints[group][first_key].Address
         mode = self.getMode(group)     
-        if mode == MODE_INPUT:
+        if mode == ModbusMode.INPUT:
             response = self._client.read_input_registers(first_address,n_reg,self._slave_id)
-        elif mode == MODE_HOLDING:
+        elif mode == ModbusMode.HOLDING:
             response = self._client.read_holding_registers(first_address,n_reg,self._slave_id) 
             
         if response.isError():
@@ -108,9 +110,9 @@ class Trox():
         _LOGGER.debug("Reading value: %s - %s", group, key)
 
         mode = self.getMode(group)
-        if mode == MODE_INPUT:
+        if mode == ModbusMode.INPUT:
             response = self._client.read_input_registers(self.Datapoints[group][key].Address,1,self._slave_id)
-        elif mode == MODE_HOLDING:
+        elif mode == ModbusMode.HOLDING:
             response = self._client.read_holding_registers(self.Datapoints[group][key].Address,1,self._slave_id)
 
         if response.isError():

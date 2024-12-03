@@ -6,7 +6,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DOMAIN
-from .pytrox.trox import Trox
+from .pytrox.trox import Trox, ModbusGroup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,14 +108,13 @@ class TroxCoordinator(DataUpdateCoordinator):
 
         self.config_selection = value
         try:
-            await self._troxDevice.readValue("Config", key)
+            await self._troxDevice.readValue(ModbusGroup.CONFIG, key)
         finally:
             await self._update_callbacks["Config_Value"](key)
 
     def get_config_options(self):
-        configs = self._troxDevice.Datapoints["Config"]
         options = {}
-        for i, config in enumerate(configs):
+        for i, config in enumerate(self._troxDevice.Datapoints[ModbusGroup.CONFIG]):
             options.update({i:config})
         return options
 
