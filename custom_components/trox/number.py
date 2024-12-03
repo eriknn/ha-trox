@@ -6,9 +6,9 @@ from homeassistant.const import PERCENTAGE
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
-from .entity import TroxBaseEntity
+from .entity import ModbusBaseEntity
 
-from .pytrox.trox import ModbusGroup
+from .pytrox.modbusdevice import ModbusGroup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,10 +24,10 @@ DATA_TYPES = {
     "config": DATA_TYPE(None, None, EntityCategory.CONFIG, None),
 }
 
-TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type', 'limits'])
+ModbusEntity = namedtuple('ModbusEntity', ['group', 'key', 'data_type', 'limits'])
 ENTITIES = [
-    TroxEntity(ModbusGroup.COMMANDS, "Setpoint", "Flow Rate Setpoint", DATA_TYPES["percent"], LIMITS["percent"]),
-    TroxEntity(ModbusGroup.CONFIG, "Config_Value", "Config Value", DATA_TYPES["config"], LIMITS["config"]),
+    ModbusEntity(ModbusGroup.COMMANDS, "Setpoint Flowrate", DATA_TYPES["percent"], LIMITS["percent"]),
+    ModbusEntity(ModbusGroup.CONFIG, "Config Value", DATA_TYPES["config"], LIMITS["config"]),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -39,25 +39,25 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create entities for this device
-    for troxentity in ENTITIES:
-        ha_entities.append(TroxNumberEntity(coordinator, troxentity))
+    for modbusentity in ENTITIES:
+        ha_entities.append(ModbusNumberEntity(coordinator, modbusentity))
 
     async_add_devices(ha_entities, True)
 
-class TroxNumberEntity(TroxBaseEntity, NumberEntity):
+class ModbusNumberEntity(ModbusBaseEntity, NumberEntity):
     """Representation of a Number."""
 
-    def __init__(self, coordinator, troxentity):
-        """Pass coordinator to TroxEntity."""
-        super().__init__(coordinator, troxentity)
+    def __init__(self, coordinator, modbusentity):
+        """Pass coordinator to ModbusEntity."""
+        super().__init__(coordinator, modbusentity)
 
         """Number Entity properties"""
-        self._attr_device_class = troxentity.data_type.deviceClass
+        self._attr_device_class = modbusentity.data_type.deviceClass
         self._attr_mode = "box"
-        self._attr_native_min_value = troxentity.limits.min_value
-        self._attr_native_max_value = troxentity.limits.max_value
-        self._attr_native_step = troxentity.limits.step
-        self._attr_native_unit_of_measurement = troxentity.data_type.units
+        self._attr_native_min_value = modbusentity.limits.min_value
+        self._attr_native_max_value = modbusentity.limits.max_value
+        self._attr_native_step = modbusentity.limits.step
+        self._attr_native_unit_of_measurement = modbusentity.data_type.units
 
         """Callback for updated value"""
         coordinator.registerOnUpdateCallback(self._key, self.update_callback)

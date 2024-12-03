@@ -8,9 +8,9 @@ from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN, CONF_IP
-from .entity import TroxBaseEntity
+from .entity import ModbusBaseEntity
 
-from .pytrox.trox import ModbusGroup
+from .pytrox.modbusdevice import ModbusGroup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,13 +22,13 @@ DATA_TYPES = {
     "voltage": DATA_TYPE(UnitOfElectricPotential.VOLT, None, None, None),
 }
 
-TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type'])
+ModbusEntity = namedtuple('ModbusEntity', ['group', 'key', 'data_type'])
 ENTITIES = [
-    TroxEntity(ModbusGroup.SENSORS, "Position", "Damper position", DATA_TYPES["percent"]),
-    TroxEntity(ModbusGroup.SENSORS, "Position_Deg", "Damper position degrees", DATA_TYPES["degrees"]),
-    TroxEntity(ModbusGroup.SENSORS, "Flowrate_Percent", "Flowrate Percent", DATA_TYPES["percent"]),
-    TroxEntity(ModbusGroup.SENSORS, "Flowrate_Actual", "Flowrate Actual", DATA_TYPES["flow"]),
-    TroxEntity(ModbusGroup.SENSORS, "Analog_SP", "Analog Setpoint", DATA_TYPES["voltage"]),
+    ModbusEntity(ModbusGroup.SENSORS, "Position", DATA_TYPES["percent"]),
+    ModbusEntity(ModbusGroup.SENSORS, "Position Degrees", DATA_TYPES["degrees"]),
+    ModbusEntity(ModbusGroup.SENSORS, "Flowrate Percent", DATA_TYPES["percent"]),
+    ModbusEntity(ModbusGroup.SENSORS, "Flowrate Actual", DATA_TYPES["flow"]),
+    ModbusEntity(ModbusGroup.SENSORS, "Analog Setpoint", DATA_TYPES["voltage"]),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -40,21 +40,21 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create entities for this device
-    for troxentity in ENTITIES:
-        ha_entities.append(TroxSensorEntity(coordinator, troxentity))
+    for modbusentity in ENTITIES:
+        ha_entities.append(ModbusSensorEntity(coordinator, modbusentity))
 
     async_add_devices(ha_entities, True)
 
 
-class TroxSensorEntity(TroxBaseEntity, SensorEntity):
+class ModbusSensorEntity(ModbusBaseEntity, SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, coordinator, troxentity):
-        super().__init__(coordinator, troxentity)
+    def __init__(self, coordinator, modbusentity):
+        super().__init__(coordinator, modbusentity)
 
         """Sensor Entity properties"""
-        self._attr_device_class = troxentity.data_type.deviceClass
-        self._attr_native_unit_of_measurement = troxentity.data_type.units
+        self._attr_device_class = modbusentity.data_type.deviceClass
+        self._attr_native_unit_of_measurement = modbusentity.data_type.units
 
     @property
     def native_value(self):

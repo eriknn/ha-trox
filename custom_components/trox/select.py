@@ -6,9 +6,9 @@ from homeassistant.const import CONF_DEVICES
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN, CONF_IP
-from .entity import TroxBaseEntity
+from .entity import ModbusBaseEntity
 
-from .pytrox.trox import ModbusGroup
+from .pytrox.modbusdevice import ModbusGroup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,11 +20,11 @@ OPTIONS = {
 
 DATA_TYPE = namedtuple('DataType', ['category', 'icon'])
 
-TroxEntity = namedtuple('TroxEntity', ['group', 'key', 'entityName', 'data_type', 'options'])
+ModbusEntity = namedtuple('ModbusEntity', ['group', 'key', 'data_type', 'options'])
 ENTITIES = [
-    TroxEntity(ModbusGroup.COMMANDS, "Override", "Override", DATA_TYPE(None, None), OPTIONS["Override"]),
-    TroxEntity(ModbusGroup.COMMANDS, "Command", "Command", DATA_TYPE(None, None), OPTIONS["Command"]),
-    TroxEntity(None, "Config_Selection", "Config Selection", DATA_TYPE(EntityCategory.CONFIG, None), None),
+    ModbusEntity(ModbusGroup.COMMANDS, "Override", DATA_TYPE(None, None), OPTIONS["Override"]),
+    ModbusEntity(ModbusGroup.COMMANDS, "Command", DATA_TYPE(None, None), OPTIONS["Command"]),
+    ModbusEntity(None, "Config Selection", DATA_TYPE(EntityCategory.CONFIG, None), None),
 ]
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -36,30 +36,30 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create entities for this device
-    for troxentity in ENTITIES:
-        ha_entities.append(TroxSelectEntity(coordinator, troxentity))
+    for modbusentity in ENTITIES:
+        ha_entities.append(ModbusSelectEntity(coordinator, modbusentity))
 
     async_add_devices(ha_entities, True)
 
 
-class TroxSelectEntity(TroxBaseEntity, SelectEntity):
+class ModbusSelectEntity(ModbusBaseEntity, SelectEntity):
     """Representation of a Select."""
 
-    def __init__(self, coordinator, troxentity):
-        """Pass coordinator to TroxEntity."""
-        super().__init__(coordinator, troxentity)
+    def __init__(self, coordinator, modbusentity):
+        """Pass coordinator to ModbusEntity."""
+        super().__init__(coordinator, modbusentity)
 
         """Select Entity properties"""
-        if self._key == "Config_Selection":
+        if self._key == "Config Selection":
             self._options = self.coordinator.get_config_options()
         else:
-            self._options = troxentity.options
+            self._options = modbusentity.options
             self._attr_translation_key = self._key
 
     @property
     def current_option(self):
         try:
-            if self._key == "Config_Selection":
+            if self._key == "Config Selection":
                 optionIndex = self.coordinator.config_selection
                 option = self._options[optionIndex]
             else:
@@ -87,7 +87,7 @@ class TroxSelectEntity(TroxBaseEntity, SelectEntity):
 
         """ Write value to device """
         try:
-            if self._key == "Config_Selection":
+            if self._key == "Config Selection":
                 await self.coordinator.config_select(option, value)
             else:           
                 await self.coordinator.write_value(self._group, self._key, value)

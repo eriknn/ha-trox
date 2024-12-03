@@ -6,7 +6,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DOMAIN
-from .pytrox.trox import Trox, ModbusGroup
+from .pytrox.modbusdevice import ModbusDevice, ModbusGroup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class TroxCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             # Name of the data. For logging purposes.
-            name="Trox: " + device.name,
+            name="ModbusDevice: " + device.name,
             # Polling interval. Will only be polled if there are subscribers.
             update_interval=dt.timedelta(seconds=scan_interval),
         )
@@ -28,7 +28,7 @@ class TroxCoordinator(DataUpdateCoordinator):
         self._fast_poll_interval = scan_interval_fast
 
         self._device = device
-        self._troxDevice = Trox(device_module, ip, port, slave_id)
+        self._modbusDevice = ModbusDevice(device_module, ip, port, slave_id)
 
         # Initialize states
         self._measurements = None
@@ -78,10 +78,10 @@ class TroxCoordinator(DataUpdateCoordinator):
         """ Fetch data """
         try:
             async with async_timeout.timeout(20):
-                await self._troxDevice.readCommands()
-                await self._troxDevice.readDeviceInfo()
+                await self._modbusDevice.readCommands()
+                await self._modbusDevice.readDeviceInfo()
                 await self._async_update_deviceInfo()
-                await self._troxDevice.readSensors()
+                await self._modbusDevice.readSensors()
                 
         except Exception as err:
             _LOGGER.debug("Failed when fetching data: %s", str(err))
@@ -91,8 +91,8 @@ class TroxCoordinator(DataUpdateCoordinator):
         device_registry.async_update_device(
             self.device_id,
             manufacturer="Trox",
-            model=self._troxDevice.getModelName(),
-            sw_version=self._troxDevice.getFW(),
+            model=self._modbusDevice.getModelName(),
+            sw_version=self._modbusDevice.getFW(),
         )
         _LOGGER.debug("Updated device data for: %s", self.devicename) 
 
@@ -104,17 +104,17 @@ class TroxCoordinator(DataUpdateCoordinator):
         self._update_callbacks.update({entity: callbackfunc})
 
     async def config_select(self, key, value):
-        _LOGGER.debug("Selected: %s", key)
+        _LOGGER.debug("Selected: %s %s", key, value)
 
         self.config_selection = value
         try:
-            await self._troxDevice.readValue(ModbusGroup.CONFIG, key)
+            await self._modbusDevice.readValue(ModbusGroup.CONFIG, key)
         finally:
-            await self._update_callbacks["Config_Value"](key)
+            await self._update_callbacks["Config Value"](key)
 
     def get_config_options(self):
         options = {}
-        for i, config in enumerate(self._troxDevice.Datapoints[ModbusGroup.CONFIG]):
+        for i, config in enumerate(self._modbusDevice.Datapoints[ModbusGroup.CONFIG]):
             options.update({i:config})
         return options
 
@@ -122,12 +122,12 @@ class TroxCoordinator(DataUpdateCoordinator):
     ######### Read / Write #########
     ################################   
     def get_value(self, group, key):
-        if group in self._troxDevice.Datapoints:
-            if key in self._troxDevice.Datapoints[group]:
-                return self._troxDevice.Datapoints[group][key].Value
+        if group in self._modbusDevice.Datapoints:
+            if key in self._modbusDevice.Datapoints[group]:
+                return self._modbusDevice.Datapoints[group][key].Value
         return None
 
     async def write_value(self, group, key, value) -> bool:
         _LOGGER.debug("Write_Data: %s - %s - %s", group, key, value)
-        await self._troxDevice.writeValue(group, key, value)
+        await self._modbusDevice.writeValue(group, key, value)
         self.setFastPollMode()
